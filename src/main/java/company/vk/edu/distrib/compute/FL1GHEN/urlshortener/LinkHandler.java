@@ -6,7 +6,6 @@ import com.sun.net.httpserver.HttpHandler;
 import company.vk.edu.distrib.compute.Dao;
 
 import java.io.InputStream;
-import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.io.IOException;
@@ -41,7 +40,7 @@ public class LinkHandler implements HttpHandler {
                 handleDelete(exchange);
                 break;
             default:
-                exchange.sendResponseHeaders(503, 0);
+                exchange.sendResponseHeaders(403, 0);
                 break;
         }
 
@@ -65,7 +64,6 @@ public class LinkHandler implements HttpHandler {
 
         try{
             dao.get(id);
-            dao.delete(id);
 
             InputStream input = exchange.getRequestBody();
 

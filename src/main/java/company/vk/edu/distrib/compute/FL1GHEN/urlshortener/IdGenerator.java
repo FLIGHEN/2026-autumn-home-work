@@ -2,8 +2,7 @@ package company.vk.edu.distrib.compute.FL1GHEN.urlshortener;
 import java.security.SecureRandom;
 
 public class IdGenerator {
-    private static final String ALPHABET =
-            "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    private static final String ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
     private static final SecureRandom generator = new SecureRandom();
 

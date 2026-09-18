@@ -7,10 +7,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
-public class Fl1ghenDao implements Dao<String> {
+public class InMemoryDao implements Dao<String> {
     private Map<String, String> linksDb;
 
-    public Fl1ghenDao(){
+    public InMemoryDao(){
         linksDb = new HashMap<>();
     }
 

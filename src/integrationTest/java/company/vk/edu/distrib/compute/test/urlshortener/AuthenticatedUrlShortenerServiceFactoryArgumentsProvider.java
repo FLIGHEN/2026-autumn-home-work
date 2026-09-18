@@ -1,5 +1,7 @@
 package company.vk.edu.distrib.compute.test.urlshortener;
 
+import company.vk.edu.distrib.compute.FL1GHEN.urlshortener.Fl1ghenUrlShortenerServiceFactory;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Stream;
@@ -17,6 +19,7 @@ public class AuthenticatedUrlShortenerServiceFactoryArgumentsProvider implements
 
     private final Collection<Class<? extends AbstractHttpServiceFactory<? extends UrlShortenerService>>> factories =
         List.of(
+                Fl1ghenUrlShortenerServiceFactory.class
         );
 
     @Override

@@ -1,0 +1,61 @@
+package company.vk.edu.distrib.compute.FL1GHEN.urlshortener;
+
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
+import company.vk.edu.distrib.compute.Dao;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.Objects;
+
+public class UsersHandler implements HttpHandler {
+    private final Dao<String> usersDao;
+
+    public UsersHandler(Dao<String> dao){
+        usersDao = dao;
+    }
+
+    @Override
+    public void handle(HttpExchange exchange) throws IOException {
+        final String method = exchange.getRequestMethod();
+
+        if(Objects.equals(method, "POST")){
+            try (InputStream input = exchange.getRequestBody()) {
+                String data = new String(input.readAllBytes(), StandardCharsets.UTF_8);
+
+                if(parseData(data)){
+                    exchange.sendResponseHeaders(200, 0);
+                }
+                else{
+                    exchange.sendResponseHeaders(422, 0);
+                }
+            }
+        }
+        else{
+            exchange.sendResponseHeaders(403, 0);
+        }
+
+        exchange.close();
+    }
+
+    private boolean parseData(String data) throws IOException{
+        data = data.strip();
+
+        if(!data.contains(":"))
+            return false;
+
+        String[] userInfo = data.split(":");
+
+        String login = userInfo[0];
+        String password = userInfo[1];
+
+        if(login.isBlank() || password.isBlank()){
+            return false;
+        }
+
+        usersDao.upsert(login, password);
+
+        return true;
+    }
+}
