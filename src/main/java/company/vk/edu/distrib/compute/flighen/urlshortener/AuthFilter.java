@@ -44,7 +44,7 @@ public class AuthFilter extends Filter {
 
         String[] userInfo = parseCredentials(rawAuth);
 
-        if (userInfo == null) {
+        if (userInfo.length == 0) {
             return false;
         }
 
@@ -74,7 +74,7 @@ public class AuthFilter extends Filter {
         String[] args = strippedAuth.split(" ");
 
         if (args.length != 2 || !Objects.equals(args[0], "Basic")) {
-            return null;
+            return new String[] {};
         }
 
         byte[] decoded = Base64.getDecoder().decode(args[1]);
@@ -82,7 +82,7 @@ public class AuthFilter extends Filter {
         String userPass = new String(decoded, StandardCharsets.UTF_8);
 
         if (!userPass.contains(":")) {
-            return null;
+            return new String[] {};
         }
 
         return userPass.split(":");

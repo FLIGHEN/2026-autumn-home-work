@@ -69,10 +69,11 @@ public class LinkHandler implements HttpHandler {
             exchange.sendResponseHeaders(404, -1);
         }
 
-        InputStream input = exchange.getRequestBody();
-        String newLongLink = new String(input.readAllBytes(), StandardCharsets.UTF_8);
+        String newLongLink;
 
-        input.close();
+        try (InputStream input = exchange.getRequestBody()) {
+            newLongLink = new String(input.readAllBytes(), StandardCharsets.UTF_8);
+        }
 
         if (!(newLongLink.contains("https") || newLongLink.contains("http"))) {
             exchange.sendResponseHeaders(422, -1);
@@ -139,10 +140,11 @@ public class LinkHandler implements HttpHandler {
             return;
         }
 
-        InputStream input = exchange.getRequestBody();
-        String longUrl = new String(input.readAllBytes(), StandardCharsets.UTF_8);
+        String longUrl;
 
-        input.close();
+        try (InputStream input = exchange.getRequestBody()) {
+            longUrl = new String(input.readAllBytes(), StandardCharsets.UTF_8);
+        }
 
         if (!(longUrl.contains("https") || longUrl.contains("http"))) {
             exchange.sendResponseHeaders(422, -1);
