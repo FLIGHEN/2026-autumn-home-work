@@ -9,7 +9,8 @@ import java.nio.file.Path;
 import java.util.*;
 
 public class PersistentDao implements Dao<String> {
-    private static final String KEYMUSTNOTBENULL = "Key must not be null";
+    private static final int KEY_VALUE_PARTS = 2;
+    private static final String KEY_MUST_NOT_BE_NULL = "Key must not be null";
 
     private final Path filePath;
 
@@ -27,7 +28,7 @@ public class PersistentDao implements Dao<String> {
 
         for (String line : lines) {
             String[] parts = line.split(",", 2);
-            if (parts.length == 2) {
+            if (parts.length == KEY_VALUE_PARTS) {
                 db.put(parts[0], parts[1]);
             }
         }
@@ -36,7 +37,7 @@ public class PersistentDao implements Dao<String> {
     @Override
     public String get(String key) throws NoSuchElementException, IllegalArgumentException, IOException {
         if (key.isBlank()) {
-            throw new IllegalArgumentException(KEYMUSTNOTBENULL);
+            throw new IllegalArgumentException(KEY_MUST_NOT_BE_NULL);
         }
 
         if (!db.containsKey(key)) {
@@ -49,7 +50,7 @@ public class PersistentDao implements Dao<String> {
     @Override
     public void upsert(String key, String value) throws IllegalArgumentException, IOException {
         if (key.isBlank()) {
-            throw new IllegalArgumentException(KEYMUSTNOTBENULL);
+            throw new IllegalArgumentException(KEY_MUST_NOT_BE_NULL);
         }
 
         db.put(key, value);
@@ -58,7 +59,7 @@ public class PersistentDao implements Dao<String> {
     @Override
     public void delete(String key) throws IllegalArgumentException, IOException {
         if (key.isBlank()) {
-            throw new IllegalArgumentException(KEYMUSTNOTBENULL);
+            throw new IllegalArgumentException(KEY_MUST_NOT_BE_NULL);
         }
 
         db.remove(key);
@@ -67,7 +68,7 @@ public class PersistentDao implements Dao<String> {
     @Override
     public boolean exists(String key) throws IllegalArgumentException {
         if (key.isBlank()) {
-            throw new IllegalArgumentException(KEYMUSTNOTBENULL);
+            throw new IllegalArgumentException(KEY_MUST_NOT_BE_NULL);
         }
 
         return db.containsKey(key);
