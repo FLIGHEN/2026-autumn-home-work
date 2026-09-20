@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 
 public class InMemoryDao implements Dao<String> {
+    private static final String KEYMUSTNOTBENULL = "Key must not be null";
+
     private final Map<String, String> db;
 
     public InMemoryDao() {
@@ -17,7 +19,7 @@ public class InMemoryDao implements Dao<String> {
     @Override
     public String get(String key) throws NoSuchElementException, IllegalArgumentException, IOException {
         if (key.isBlank()) {
-            throw new IllegalArgumentException("Key must not be null");
+            throw new IllegalArgumentException(KEYMUSTNOTBENULL);
         }
 
         if (!db.containsKey(key)) {
@@ -30,7 +32,7 @@ public class InMemoryDao implements Dao<String> {
     @Override
     public void upsert(String key, String value) throws IllegalArgumentException {
         if (key.isBlank()) {
-            throw new IllegalArgumentException("Key must not be null");
+            throw new IllegalArgumentException(KEYMUSTNOTBENULL);
         }
 
         db.put(key, value);
@@ -39,7 +41,7 @@ public class InMemoryDao implements Dao<String> {
     @Override
     public void delete(String key) throws IllegalArgumentException {
         if (key.isBlank()) {
-            throw new IllegalArgumentException("Key must not be null");
+            throw new IllegalArgumentException(KEYMUSTNOTBENULL);
         }
 
         db.remove(key);
@@ -48,7 +50,7 @@ public class InMemoryDao implements Dao<String> {
     @Override
     public boolean exists(String key) throws IllegalArgumentException {
         if (key.isBlank()) {
-            throw new IllegalArgumentException("Key must not be null");
+            throw new IllegalArgumentException(KEYMUSTNOTBENULL);
         }
 
         return db.containsKey(key);
