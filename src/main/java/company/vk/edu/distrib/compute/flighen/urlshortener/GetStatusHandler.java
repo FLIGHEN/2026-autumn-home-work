@@ -1,4 +1,4 @@
-package company.vk.edu.distrib.compute.FL1GHEN.urlshortener;
+package company.vk.edu.distrib.compute.flighen.urlshortener;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -15,11 +15,10 @@ public class GetStatusHandler implements HttpHandler {
     public void handle(HttpExchange exchange) throws IOException {
         final var method = exchange.getRequestMethod();
 
-        if(Objects.equals(method, "GET")){
+        if (Objects.equals(method, "GET")) {
             exchange.sendResponseHeaders(200, UP.length());
             exchange.getResponseBody().write(UP.getBytes(StandardCharsets.UTF_8));
-        }
-        else{
+        } else {
             exchange.sendResponseHeaders(503, 0);
         }
 

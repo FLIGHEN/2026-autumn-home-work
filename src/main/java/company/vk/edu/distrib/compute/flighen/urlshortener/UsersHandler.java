@@ -1,4 +1,4 @@
-package company.vk.edu.distrib.compute.FL1GHEN.urlshortener;
+package company.vk.edu.distrib.compute.flighen.urlshortener;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -12,7 +12,7 @@ import java.util.Objects;
 public class UsersHandler implements HttpHandler {
     private final Dao<String> usersDao;
 
-    public UsersHandler(Dao<String> dao){
+    public UsersHandler(Dao<String> dao) {
         usersDao = dao;
     }
 
@@ -20,37 +20,36 @@ public class UsersHandler implements HttpHandler {
     public void handle(HttpExchange exchange) throws IOException {
         final String method = exchange.getRequestMethod();
 
-        if(Objects.equals(method, "POST")){
+        if (Objects.equals(method, "POST")) {
             try (InputStream input = exchange.getRequestBody()) {
                 String data = new String(input.readAllBytes(), StandardCharsets.UTF_8);
 
-                if(parseData(data)){
+                if (parseData(data)) {
                     exchange.sendResponseHeaders(200, 0);
-                }
-                else{
+                } else {
                     exchange.sendResponseHeaders(422, 0);
                 }
             }
-        }
-        else{
+        } else {
             exchange.sendResponseHeaders(403, 0);
         }
 
         exchange.close();
     }
 
-    private boolean parseData(String data) throws IOException{
-        data = data.strip();
+    private boolean parseData(String data) throws IOException {
+        String stripData = data.strip();
 
-        if(!data.contains(":"))
+        if (!stripData.contains(":")) {
             return false;
+        }
 
-        String[] userInfo = data.split(":");
+        String[] userInfo = stripData.split(":");
 
         String login = userInfo[0];
         String password = userInfo[1];
 
-        if(login.isBlank() || password.isBlank()){
+        if (login.isBlank() || password.isBlank()) {
             return false;
         }
 

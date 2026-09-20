@@ -1,6 +1,6 @@
 package company.vk.edu.distrib.compute.test.urlshortener;
 
-import company.vk.edu.distrib.compute.FL1GHEN.urlshortener.Fl1ghenUrlShortenerServiceFactory;
+import company.vk.edu.distrib.compute.flighen.urlshortener.Fl1ghenUrlShortenerServiceFactory;
 
 import java.util.Collection;
 import java.util.List;

@@ -1,4 +1,4 @@
-package company.vk.edu.distrib.compute.FL1GHEN.urlshortener;
+package company.vk.edu.distrib.compute.flighen.urlshortener;
 
 import company.vk.edu.distrib.compute.AbstractHttpServiceFactory;
 
