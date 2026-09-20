@@ -14,13 +14,10 @@ public class Fl1ghenUrlShortenerService implements UrlShortenerService {
     private final HttpServer server;
     private final Dao<String> shortLinksDao;
     private final Dao<String> usersDao;
-    private final AuthFilter authFilter;
 
     public Fl1ghenUrlShortenerService(int port) throws IOException {
-        shortLinksDao = new PersistentDao(Path.of("shortLinks.txt"));
         usersDao = new PersistentDao(Path.of("usersDb.txt"));
-
-        authFilter = new AuthFilter(usersDao);
+        shortLinksDao = new PersistentDao(Path.of("shortLinks.txt"));
 
         server = HttpServer.create(new InetSocketAddress(port), 0);
         server.createContext("/v0/status", new GetStatusHandler());
@@ -28,6 +25,7 @@ public class Fl1ghenUrlShortenerService implements UrlShortenerService {
         server.createContext("/internal/users", new UsersHandler(usersDao));
         HttpContext ctxLink = server.createContext("/v0/links", new LinkHandler(shortLinksDao, port));
 
+        AuthFilter authFilter = new AuthFilter(usersDao);
         ctxLink.getFilters().add(authFilter);
     }
 

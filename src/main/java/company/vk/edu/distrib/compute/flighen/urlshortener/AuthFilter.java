@@ -42,23 +42,11 @@ public class AuthFilter extends Filter {
             return false;
         }
 
-        rawAuth = rawAuth.strip();
+        String[] userInfo = parseCredentials(rawAuth);
 
-        String[] args = rawAuth.split(" ");
-
-        if (args.length != 2 || !Objects.equals(args[0], "Basic")) {
+        if (userInfo == null) {
             return false;
         }
-
-        byte[] decoded = Base64.getDecoder().decode(args[1]);
-
-        String userPass = new String(decoded, StandardCharsets.UTF_8);
-
-        if (!userPass.contains(":")) {
-            return false;
-        }
-
-        String[] userInfo = userPass.split(":");
 
         String login = userInfo[0];
         String password = userInfo[1];
@@ -78,6 +66,26 @@ public class AuthFilter extends Filter {
         }
 
         return true;
+    }
+
+    private String[] parseCredentials(String rawAuth) {
+        String strippedAuth = rawAuth.strip();
+
+        String[] args = strippedAuth.split(" ");
+
+        if (args.length != 2 || !Objects.equals(args[0], "Basic")) {
+            return null;
+        }
+
+        byte[] decoded = Base64.getDecoder().decode(args[1]);
+
+        String userPass = new String(decoded, StandardCharsets.UTF_8);
+
+        if (!userPass.contains(":")) {
+            return null;
+        }
+
+        return userPass.split(":");
     }
 
     private void returnUnAuthorized(HttpExchange exchange) throws IOException {

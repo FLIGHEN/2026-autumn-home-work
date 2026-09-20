@@ -12,6 +12,10 @@ import java.io.IOException;
 public class LinkHandler implements HttpHandler {
     public static final int ID_LENGTH = 10;
 
+    private static final String ENCODING = "utf-8";
+    private static final String MEDIATYPE = "text/html";
+    private static final String CHARSET = "charset";
+
     private final Dao<String> dao;
 
     private final int port;
@@ -117,7 +121,7 @@ public class LinkHandler implements HttpHandler {
             String link = dao.get(id);
 
             exchange.getResponseHeaders()
-                    .add("Content-Type", "text/html; charset=utf-8");
+                    .add("Content-Type", "%s; charset=%s".formatted(MEDIATYPE, ENCODING));
 
             exchange.sendResponseHeaders(200, link.length());
 
@@ -138,12 +142,12 @@ public class LinkHandler implements HttpHandler {
         InputStream input = exchange.getRequestBody();
         String longUrl = new String(input.readAllBytes(), StandardCharsets.UTF_8);
 
+        input.close();
+
         if (!(longUrl.contains("https") || longUrl.contains("http"))) {
             exchange.sendResponseHeaders(422, -1);
             return;
         }
-
-        input.close();
 
         String generatedID = IdUtils.getId(ID_LENGTH);
 
@@ -155,7 +159,7 @@ public class LinkHandler implements HttpHandler {
         }
 
         exchange.getResponseHeaders()
-                .add("Content-Type", "text/html; charset=utf-8");
+                .add("Content-Type", "%s; charset=%s".formatted(MEDIATYPE, ENCODING));
 
         String responseUrl = "http://localhost:" + port + "/" + generatedID;
 
@@ -174,7 +178,7 @@ public class LinkHandler implements HttpHandler {
 
         String mediaType = parts[0].trim();
 
-        if (!"text/html".equalsIgnoreCase(mediaType)) {
+        if (!MEDIATYPE.equalsIgnoreCase(mediaType)) {
             return false;
         }
 
@@ -183,11 +187,11 @@ public class LinkHandler implements HttpHandler {
         for (int i = 1; i < parts.length; i++) {
             String[] parameter = parts[i].trim().split("=", 2);
 
-            if (parameter.length == 2 && "charset".equalsIgnoreCase(parameter[0].trim())) {
+            if (parameter.length == 2 && CHARSET.equalsIgnoreCase(parameter[0].trim())) {
                 charset = parameter[1].trim().replace("\"", "");
             }
         }
 
-        return "utf-8".equalsIgnoreCase(charset);
+        return ENCODING.equalsIgnoreCase(charset);
     }
 }
