@@ -26,7 +26,12 @@ public class Fl1ghenUrlShortenerService implements UrlShortenerService {
                 "fl1ghen-urlshortener"
         );
 
-        Files.createDirectories(storageDir);
+        try {
+            Files.createDirectories(storageDir);
+        } catch (IOException e){
+            log.error("Failed to create temp directory {}", storageDir, e);
+            throw e;
+        }
 
         usersDao = new PersistentDao(
                 storageDir.resolve("usersDb.txt")
