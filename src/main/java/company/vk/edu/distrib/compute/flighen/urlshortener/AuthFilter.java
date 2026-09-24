@@ -59,12 +59,13 @@ public class AuthFilter extends Filter {
             return false;
         }
 
+        return credentialsMatch(login, password);
+    }
+
+    private boolean credentialsMatch(String login, String password) throws IOException {
         try {
             String rightPass = usersDao.get(login);
-
-            if (!Objects.equals(rightPass, password)) {
-                return false;
-            }
+            return Objects.equals(rightPass, password);
         } catch (NoSuchElementException | IllegalArgumentException e) {
             return false;
         } catch (IOException e) {
@@ -73,8 +74,6 @@ public class AuthFilter extends Filter {
             }
             throw e;
         }
-
-        return true;
     }
 
     private String[] parseCredentials(String rawAuth) {
