@@ -28,8 +28,10 @@ public class Fl1ghenUrlShortenerService implements UrlShortenerService {
 
         try {
             Files.createDirectories(storageDir);
-        } catch (IOException e){
-            log.error("Failed to create temp directory {}", storageDir, e);
+        } catch (IOException e) {
+            if (log.isErrorEnabled()) {
+                log.error("Failed to create temp directory {}", storageDir, e);
+            }
             throw e;
         }
 

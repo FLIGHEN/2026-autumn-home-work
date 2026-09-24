@@ -53,12 +53,14 @@ public class RedirectHandler implements HttpHandler {
                 exchange.sendResponseHeaders(403, -1);
             }
         } catch (IOException e) {
-            log.error(
-                    "I/O error while handling {} {}",
-                    exchange.getRequestMethod(),
-                    exchange.getRequestURI(),
-                    e
-            );
+            if (log.isErrorEnabled()) {
+                log.error(
+                        "I/O error while handling {} {}",
+                        exchange.getRequestMethod(),
+                        exchange.getRequestURI(),
+                        e
+                );
+            }
 
             throw e;
         }

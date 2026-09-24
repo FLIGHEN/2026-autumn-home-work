@@ -12,6 +12,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 public class UsersHandler implements HttpHandler {
+    private static final int CREDENTIAL_PARTS_COUNT = 2;
+
     private static final Logger log =
             LoggerFactory.getLogger(UsersHandler.class);
 
@@ -40,12 +42,14 @@ public class UsersHandler implements HttpHandler {
                 exchange.sendResponseHeaders(403, 0);
             }
         } catch (IOException e) {
-            log.error(
-                    "I/O error while handling {} {}",
-                    method,
-                    exchange.getRequestURI(),
-                    e
-            );
+            if (log.isErrorEnabled()) {
+                log.error(
+                        "I/O error while handling {} {}",
+                        method,
+                        exchange.getRequestURI(),
+                        e
+                );
+            }
             throw e;
         }
 
@@ -61,7 +65,7 @@ public class UsersHandler implements HttpHandler {
 
         String[] userInfo = stripData.split(":", 2);
 
-        if (userInfo.length != 2) {
+        if (userInfo.length != CREDENTIAL_PARTS_COUNT) {
             return false;
         }
 
