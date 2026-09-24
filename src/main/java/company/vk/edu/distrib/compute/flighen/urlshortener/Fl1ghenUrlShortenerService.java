@@ -7,6 +7,7 @@ import company.vk.edu.distrib.compute.urlshortener.UrlShortenerService;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.slf4j.Logger;
@@ -20,12 +21,19 @@ public class Fl1ghenUrlShortenerService implements UrlShortenerService {
     private final Dao<String> usersDao;
 
     public Fl1ghenUrlShortenerService(int port) throws IOException {
-        usersDao = new PersistentDao(Path.of(
-                "src/main/java/company/vk/edu/distrib/compute/flighen/urlshortener/usersDb.txt"
-        ));
-        shortLinksDao = new PersistentDao(Path.of(
-                "src/main/java/company/vk/edu/distrib/compute/flighen/urlshortener/shortLinks.txt"
-        ));
+        Path storageDir = Path.of(
+                System.getProperty("java.io.tmpdir"),
+                "fl1ghen-urlshortener"
+        );
+
+        Files.createDirectories(storageDir);
+
+        usersDao = new PersistentDao(
+                storageDir.resolve("usersDb.txt")
+        );
+        shortLinksDao = new PersistentDao(
+                storageDir.resolve("shortLinks.txt")
+        );
 
         server = HttpServer.create(new InetSocketAddress(port), 0);
         server.createContext("/v0/status", new GetStatusHandler());
