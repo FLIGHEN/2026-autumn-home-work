@@ -3,6 +3,8 @@ package company.vk.edu.distrib.compute.flighen.urlshortener;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import company.vk.edu.distrib.compute.Dao;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,6 +12,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 public class UsersHandler implements HttpHandler {
+    private static final Logger log =
+            LoggerFactory.getLogger(UsersHandler.class);
+
     private final Dao<String> usersDao;
 
     public UsersHandler(Dao<String> dao) {
@@ -20,18 +25,28 @@ public class UsersHandler implements HttpHandler {
     public void handle(HttpExchange exchange) throws IOException {
         final String method = exchange.getRequestMethod();
 
-        if (Objects.equals(method, "POST")) {
-            try (InputStream input = exchange.getRequestBody()) {
-                String data = new String(input.readAllBytes(), StandardCharsets.UTF_8);
+        try (exchange) {
+            if (Objects.equals(method, "POST")) {
+                try (InputStream input = exchange.getRequestBody()) {
+                    String data = new String(input.readAllBytes(), StandardCharsets.UTF_8);
 
-                if (parseData(data)) {
-                    exchange.sendResponseHeaders(200, 0);
-                } else {
-                    exchange.sendResponseHeaders(422, 0);
+                    if (parseData(data)) {
+                        exchange.sendResponseHeaders(200, 0);
+                    } else {
+                        exchange.sendResponseHeaders(422, 0);
+                    }
                 }
+            } else {
+                exchange.sendResponseHeaders(403, 0);
             }
-        } else {
-            exchange.sendResponseHeaders(403, 0);
+        } catch (IOException e) {
+            log.error(
+                    "I/O error while handling {} {}",
+                    method,
+                    exchange.getRequestURI(),
+                    e
+            );
+            throw e;
         }
 
         exchange.close();
@@ -44,7 +59,11 @@ public class UsersHandler implements HttpHandler {
             return false;
         }
 
-        String[] userInfo = stripData.split(":");
+        String[] userInfo = stripData.split(":", 2);
+
+        if (userInfo.length != 2) {
+            return false;
+        }
 
         String login = userInfo[0];
         String password = userInfo[1];
