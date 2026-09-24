@@ -3,6 +3,8 @@ package company.vk.edu.distrib.compute.flighen.urlshortener;
 import com.sun.net.httpserver.Filter;
 import com.sun.net.httpserver.HttpExchange;
 import company.vk.edu.distrib.compute.Dao;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -11,8 +13,10 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 
 public class AuthFilter extends Filter {
+    private final Logger log =
+            LoggerFactory.getLogger(AuthFilter.class);
 
-    public static final String REALM = "url-shortener";
+    private static final String REALM = "url-shortener";
 
     private final Dao<String> usersDao;
 
@@ -63,6 +67,9 @@ public class AuthFilter extends Filter {
             }
         } catch (NoSuchElementException | IllegalArgumentException e) {
             return false;
+        } catch (IOException e) {
+            log.error("Failed to read user credentials from DAO", e);
+            throw e;
         }
 
         return true;

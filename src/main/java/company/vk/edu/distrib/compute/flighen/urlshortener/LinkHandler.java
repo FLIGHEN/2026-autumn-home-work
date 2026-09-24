@@ -3,6 +3,8 @@ package company.vk.edu.distrib.compute.flighen.urlshortener;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import company.vk.edu.distrib.compute.Dao;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -10,10 +12,13 @@ import java.util.*;
 import java.io.IOException;
 
 public class LinkHandler implements HttpHandler {
-    public static final int ID_LENGTH = 10;
+    private static final Logger log =
+            LoggerFactory.getLogger(LinkHandler.class);
+
+    private static final int ID_LENGTH = 10;
 
     private static final String ENCODING = "utf-8";
-    private static final String MEDIATYPE = "text/html";
+    private static final String MEDIA_TYPE = "text/html";
     private static final String CHARSET = "charset";
 
     private final Dao<String> dao;
@@ -29,22 +34,32 @@ public class LinkHandler implements HttpHandler {
     public void handle(HttpExchange exchange) throws IOException {
         final var method = exchange.getRequestMethod();
 
-        switch (method) {
-            case "GET":
-                handeGet(exchange);
-                break;
-            case "POST":
-                handlePost(exchange);
-                break;
-            case "PUT":
-                handlePut(exchange);
-                break;
-            case "DELETE":
-                handleDelete(exchange);
-                break;
-            default:
-                exchange.sendResponseHeaders(403, -1);
-                break;
+        try (exchange) {
+            switch (method) {
+                case "GET":
+                    handeGet(exchange);
+                    break;
+                case "POST":
+                    handlePost(exchange);
+                    break;
+                case "PUT":
+                    handlePut(exchange);
+                    break;
+                case "DELETE":
+                    handleDelete(exchange);
+                    break;
+                default:
+                    exchange.sendResponseHeaders(403, -1);
+                    break;
+            }
+        } catch (IOException e) {
+            log.error(
+                    "I/O error while handling {} {}",
+                    exchange.getRequestMethod(),
+                    exchange.getRequestURI(),
+                    e
+            );
+            throw e;
         }
 
         exchange.close();
@@ -122,7 +137,7 @@ public class LinkHandler implements HttpHandler {
             String link = dao.get(id);
 
             exchange.getResponseHeaders()
-                    .add("Content-Type", "%s; charset=%s".formatted(MEDIATYPE, ENCODING));
+                    .add("Content-Type", "%s; charset=%s".formatted(MEDIA_TYPE, ENCODING));
 
             exchange.sendResponseHeaders(200, link.length());
 
@@ -161,7 +176,7 @@ public class LinkHandler implements HttpHandler {
         }
 
         exchange.getResponseHeaders()
-                .add("Content-Type", "%s; charset=%s".formatted(MEDIATYPE, ENCODING));
+                .add("Content-Type", "%s; charset=%s".formatted(MEDIA_TYPE, ENCODING));
 
         String responseUrl = "http://localhost:" + port + "/" + generatedID;
 
@@ -180,7 +195,7 @@ public class LinkHandler implements HttpHandler {
 
         String mediaType = parts[0].trim();
 
-        if (!MEDIATYPE.equalsIgnoreCase(mediaType)) {
+        if (!MEDIA_TYPE.equalsIgnoreCase(mediaType)) {
             return false;
         }
 
