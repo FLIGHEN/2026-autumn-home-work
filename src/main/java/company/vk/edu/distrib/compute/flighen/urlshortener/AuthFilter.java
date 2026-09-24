@@ -68,7 +68,9 @@ public class AuthFilter extends Filter {
         } catch (NoSuchElementException | IllegalArgumentException e) {
             return false;
         } catch (IOException e) {
-            log.error("Failed to read user credentials from DAO", e);
+            if (log.isErrorEnabled()) {
+                log.error("Failed to read user credentials from DAO", e);
+            }
             throw e;
         }
 
