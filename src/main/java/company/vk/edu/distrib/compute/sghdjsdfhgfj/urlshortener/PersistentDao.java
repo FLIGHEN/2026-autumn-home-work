@@ -56,11 +56,6 @@ public class PersistentDao implements Dao<String> {
     }
 
     @Override
-    public boolean exists(String key) throws IllegalArgumentException {
-        return false;
-    }
-
-    @Override
     public void close() throws IOException {
         //
     }

@@ -48,15 +48,6 @@ public class InMemoryDao implements Dao<String> {
     }
 
     @Override
-    public boolean exists(String key) throws IllegalArgumentException {
-        if (key.isBlank()) {
-            throw new IllegalArgumentException(KEY_MUST_NOT_BE_NULL);
-        }
-
-        return db.containsKey(key);
-    }
-
-    @Override
     public void close() throws IOException {
         db.clear();
     }

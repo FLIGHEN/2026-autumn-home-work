@@ -67,6 +67,15 @@ public class LinkHandler implements HttpHandler {
         exchange.close();
     }
 
+    private boolean exists(String id) throws IOException {
+        try {
+            dao.get(id);
+            return true;
+        } catch (NoSuchElementException e) {
+            return false;
+        }
+    }
+
     private void handlePut(HttpExchange exchange) throws IOException {
         String[] path = exchange.getRequestURI().getPath().split("/");
 
@@ -82,7 +91,7 @@ public class LinkHandler implements HttpHandler {
             return;
         }
 
-        if (!dao.exists(id)) {
+        if (!exists(id)) {
             exchange.sendResponseHeaders(404, -1);
             return;
         }
