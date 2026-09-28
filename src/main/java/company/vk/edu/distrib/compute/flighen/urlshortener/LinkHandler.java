@@ -84,6 +84,7 @@ public class LinkHandler implements HttpHandler {
 
         if (!dao.exists(id)) {
             exchange.sendResponseHeaders(404, -1);
+            return;
         }
 
         String newLongLink;
