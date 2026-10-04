@@ -4,6 +4,7 @@ import company.vk.edu.distrib.compute.AbstractHttpServiceFactory;
 
 import java.io.IOException;
 
+import company.vk.edu.distrib.compute.kv.KVServiceTest;
 import company.vk.edu.distrib.compute.urlshortener.UrlShortenerTest;
 import company.vk.edu.distrib.compute.urlshortener.UrlShortenerAuthTest;
 
