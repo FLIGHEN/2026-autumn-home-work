@@ -17,8 +17,11 @@ public class Fl1ghenUrlShortenerService implements UrlShortenerService {
     private static final Logger log = LoggerFactory.getLogger(Fl1ghenUrlShortenerService.class);
 
     private final HttpServer server;
-    private final Dao<String> shortLinksDao;
     private final Dao<String> usersDao;
+    private Dao<String> shortLinksDao;
+
+    private boolean started = false;
+    private boolean stopped = false;
 
     public Fl1ghenUrlShortenerService(int port) throws IOException {
         Path storageDir = Path.of(
@@ -55,6 +58,7 @@ public class Fl1ghenUrlShortenerService implements UrlShortenerService {
     @Override
     public void start() {
         server.start();
+        started = true;
     }
 
     @Override
@@ -72,5 +76,16 @@ public class Fl1ghenUrlShortenerService implements UrlShortenerService {
         } catch (IOException e) {
             log.error("Failed to close usersDao", e);
         }
+
+        stopped = false;
+    }
+
+    @Override
+    public void setLinksDao(Dao<String> dao) {
+        if (started || stopped) {
+            throw new IllegalStateException();
+        }
+
+        this.shortLinksDao = dao;
     }
 }
