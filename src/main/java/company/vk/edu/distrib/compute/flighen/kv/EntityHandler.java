@@ -3,7 +3,6 @@ package company.vk.edu.distrib.compute.flighen.kv;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import company.vk.edu.distrib.compute.Dao;
-import company.vk.edu.distrib.compute.flighen.urlshortener.IdUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,8 +16,7 @@ public class EntityHandler implements HttpHandler {
     private static final Logger log =
             LoggerFactory.getLogger(EntityHandler.class);
 
-    private static final Pattern ID_PATTERN = Pattern.compile("^id=([A-Za-z0-9_-]+)$");
-    private static final String MEDIA_TYPE = "application/octet-stream";
+    private static final Pattern ID_PATTERN = Pattern.compile("^id=([A-Za-z0-9_-]*)$");
 
     private final Dao<byte[]> dao;
 
@@ -71,6 +69,8 @@ public class EntityHandler implements HttpHandler {
             dao.delete(id);
 
             exchange.sendResponseHeaders(202, -1);
+        } catch (EmptyKeyException e) {
+            exchange.sendResponseHeaders(400, -1);
         } catch (IllegalArgumentException e) {
             exchange.sendResponseHeaders(422, -1);
         }
@@ -91,12 +91,14 @@ public class EntityHandler implements HttpHandler {
             dao.upsert(id, value);
 
             exchange.sendResponseHeaders(201, -1);
+        } catch (EmptyKeyException e) {
+            exchange.sendResponseHeaders(400, -1);
         } catch (IllegalArgumentException e) {
             exchange.sendResponseHeaders(422, -1);
         }
     }
 
-    private void handeGet(HttpExchange exchange) throws IOException{
+    private void handeGet(HttpExchange exchange) throws IOException {
         Optional<String> parsedId = getParameterId(exchange);
 
         if (parsedId.isEmpty()) {
@@ -108,11 +110,11 @@ public class EntityHandler implements HttpHandler {
         try {
             byte[] value = dao.get(id);
 
-            exchange.getResponseHeaders().set("Content-Type", MEDIA_TYPE);
-
             exchange.sendResponseHeaders(200, value.length);
 
             exchange.getResponseBody().write(value);
+        } catch (EmptyKeyException e) {
+            exchange.sendResponseHeaders(400, -1);
         } catch (IllegalArgumentException e) {
             exchange.sendResponseHeaders(422, -1);
         } catch (NoSuchElementException e) {
@@ -135,34 +137,6 @@ public class EntityHandler implements HttpHandler {
             return Optional.empty();
         }
 
-        if (!validateHeaders(exchange)) {
-            exchange.sendResponseHeaders(415, -1);
-            return Optional.empty();
-        }
-
         return Optional.of(matcher.group(1));
-    }
-
-    private boolean validateHeaders(HttpExchange exchange) throws IOException {
-        String rawContentType = exchange.getRequestHeaders().getFirst("Content-Type");
-
-        if (rawContentType == null) {
-            return false;
-        }
-
-        String[] parts = rawContentType.split(";");
-
-        String mediaType = parts[0].trim();
-
-        return MEDIA_TYPE.equalsIgnoreCase(mediaType);
-    }
-
-    private boolean exists(String id) throws IOException {
-        try {
-            dao.get(id);
-            return true;
-        } catch (NoSuchElementException e) {
-            return false;
-        }
     }
 }

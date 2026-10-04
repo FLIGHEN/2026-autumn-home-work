@@ -3,12 +3,16 @@ package company.vk.edu.distrib.compute.flighen.urlshortener;
 import com.sun.net.httpserver.HttpContext;
 import com.sun.net.httpserver.HttpServer;
 import company.vk.edu.distrib.compute.Dao;
+import company.vk.edu.distrib.compute.flighen.kv.LinksDaoListener;
 import company.vk.edu.distrib.compute.urlshortener.UrlShortenerService;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,12 +20,13 @@ import org.slf4j.LoggerFactory;
 public class Fl1ghenUrlShortenerService implements UrlShortenerService {
     private static final Logger log = LoggerFactory.getLogger(Fl1ghenUrlShortenerService.class);
 
+    private final List<LinksDaoListener> linksDaoListeners = new ArrayList<>();
     private final HttpServer server;
     private final Dao<String> usersDao;
     private Dao<String> shortLinksDao;
 
-    private boolean started = false;
-    private boolean stopped = false;
+    private boolean started;
+    private boolean stopped;
 
     public Fl1ghenUrlShortenerService(int port) throws IOException {
         Path storageDir = Path.of(
@@ -45,11 +50,17 @@ public class Fl1ghenUrlShortenerService implements UrlShortenerService {
                 storageDir.resolve("shortLinks.txt")
         );
 
+        RedirectHandler redirectHandler = new RedirectHandler(shortLinksDao);
+        LinkHandler linkHandler = new LinkHandler(shortLinksDao, port);
+
+        linksDaoListeners.add(redirectHandler);
+        linksDaoListeners.add(linkHandler);
+
         server = HttpServer.create(new InetSocketAddress(port), 0);
         server.createContext("/v0/status", new GetStatusHandler());
-        server.createContext("/", new RedirectHandler(shortLinksDao));
+        server.createContext("/", redirectHandler);
         server.createContext("/internal/users", new UsersHandler(usersDao));
-        HttpContext ctxLink = server.createContext("/v0/links", new LinkHandler(shortLinksDao, port));
+        HttpContext ctxLink = server.createContext("/v0/links", linkHandler);
 
         AuthFilter authFilter = new AuthFilter(usersDao);
         ctxLink.getFilters().add(authFilter);
@@ -86,6 +97,10 @@ public class Fl1ghenUrlShortenerService implements UrlShortenerService {
             throw new IllegalStateException();
         }
 
-        this.shortLinksDao = dao;
+        this.shortLinksDao = Objects.requireNonNull(dao, "Links Dao must not be null");
+
+        for (LinksDaoListener listener : linksDaoListeners) {
+            listener.onLinksDaoChanged(dao);
+        }
     }
 }

@@ -137,5 +137,6 @@ public class FlighenRemoteDao implements Dao<String> {
 
     @Override
     public void close() throws IOException {
+        client.close();
     }
 }

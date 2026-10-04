@@ -11,11 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
-
 public class BytesDao implements Dao<byte[]> {
-
-    private static final String KEY_MUST_NOT_BE_NULL = "Key must not be null";
-
     private final Path filePath;
 
     private final Map<String, byte[]> db;
@@ -28,13 +24,13 @@ public class BytesDao implements Dao<byte[]> {
             Files.createFile(filePath);
         }
 
-        ReadFile();
+        readFile();
     }
 
     @Override
     public byte[] get(String key) throws NoSuchElementException, IllegalArgumentException, IOException {
         if (key.isBlank()) {
-            throw new IllegalArgumentException(KEY_MUST_NOT_BE_NULL);
+            throw new EmptyKeyException();
         }
 
         if (!db.containsKey(key)) {
@@ -47,7 +43,7 @@ public class BytesDao implements Dao<byte[]> {
     @Override
     public void upsert(String key, byte @NonNull [] value) throws IllegalArgumentException, IOException {
         if (key.isBlank()) {
-            throw new IllegalArgumentException(KEY_MUST_NOT_BE_NULL);
+            throw new EmptyKeyException();
         }
 
         db.put(key, value);
@@ -56,7 +52,7 @@ public class BytesDao implements Dao<byte[]> {
     @Override
     public void delete(String key) throws IllegalArgumentException, IOException {
         if (key.isBlank()) {
-            throw new IllegalArgumentException(KEY_MUST_NOT_BE_NULL);
+            throw new EmptyKeyException();
         }
 
         db.remove(key);
@@ -80,7 +76,7 @@ public class BytesDao implements Dao<byte[]> {
         }
     }
 
-    public void ReadFile() throws IOException {
+    public void readFile() throws IOException {
         try (DataInputStream in = new DataInputStream(Files.newInputStream(filePath))) {
             while (in.available() > 0) {
                 int keyLength = in.readInt();
