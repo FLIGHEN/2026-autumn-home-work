@@ -10,6 +10,8 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class FlighenKVService implements KVService {
     private static final Logger log = LoggerFactory.getLogger(FlighenKVService.class);
@@ -17,7 +19,9 @@ public class FlighenKVService implements KVService {
     private final HttpServer server;
     private final Dao<byte[]> dao;
 
-    public FlighenKVService(int port) throws IOException {
+    private final ExecutorService executor;
+
+    public FlighenKVService(int port, int threads) throws IOException {
         Path storageDir = Path.of(
                 System.getProperty("java.io.tmpdir"),
                 "fl1ghen-urlshortener"
@@ -39,6 +43,10 @@ public class FlighenKVService implements KVService {
         server = HttpServer.create(new InetSocketAddress(port), 0);
         server.createContext("/v0/status", new GetStatusHandler());
         server.createContext("/v0/entity", new EntityHandler(dao));
+
+        executor = Executors.newFixedThreadPool(threads);
+
+        server.setExecutor(executor);
     }
 
     @Override
@@ -49,7 +57,7 @@ public class FlighenKVService implements KVService {
     @Override
     public void stop() {
         server.stop(1);
-
+        executor.shutdown();
         try {
             dao.close();
         } catch (IOException e) {
