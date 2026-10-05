@@ -11,7 +11,7 @@ import java.io.IOException;
 public class FlighenKVServiceFactory extends AbstractHttpServiceFactory<FlighenKVService> {
     private static final Logger log = LoggerFactory.getLogger(FlighenKVServiceFactory.class);
 
-    private static int THREADSNUM = 8;
+    private static final int THREADSNUM = 8;
 
     @Override
     protected FlighenKVService doCreate(int port) throws IOException {

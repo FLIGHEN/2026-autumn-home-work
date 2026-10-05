@@ -10,6 +10,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -20,12 +21,11 @@ public class BytesDao implements Dao<byte[]> {
     private final Map<String, byte[]> db;
 
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
-    private final Lock readLock = lock.readLock();
     private final Lock writeLock = lock.writeLock();
 
     public BytesDao(Path filePath) throws IOException {
         this.filePath = filePath;
-        db = new HashMap<>();
+        db = new ConcurrentHashMap<>();
 
         if (!Files.exists(filePath)) {
             Files.createFile(filePath);
@@ -40,18 +40,13 @@ public class BytesDao implements Dao<byte[]> {
             throw new EmptyKeyException();
         }
 
-        readLock.lock();
-        try {
-            byte[] value = db.get(key);
+        byte[] value = db.get(key);
 
-            if (value == null) {
-                throw new NoSuchElementException("db does not contain this key: %s".formatted(key));
-            }
-
-            return db.get(key);
-        } finally {
-            readLock.unlock();
+        if (value == null) {
+            throw new NoSuchElementException("db does not contain this key: %s".formatted(key));
         }
+
+        return db.get(key);
     }
 
     @Override
@@ -60,12 +55,7 @@ public class BytesDao implements Dao<byte[]> {
             throw new EmptyKeyException();
         }
 
-        writeLock.lock();
-        try {
-            db.put(key, value);
-        } finally {
-            writeLock.unlock();
-        }
+        db.put(key, value);
     }
 
     @Override
@@ -74,12 +64,7 @@ public class BytesDao implements Dao<byte[]> {
             throw new EmptyKeyException();
         }
 
-        writeLock.lock();
-        try {
-            db.remove(key);
-        } finally {
-            writeLock.unlock();
-        }
+        db.remove(key);
     }
 
     @Override
