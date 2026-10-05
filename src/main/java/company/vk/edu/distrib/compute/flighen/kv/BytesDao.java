@@ -46,7 +46,7 @@ public class BytesDao implements Dao<byte[]> {
             throw new NoSuchElementException("db does not contain this key: %s".formatted(key));
         }
 
-        return db.get(key);
+        return value;
     }
 
     @Override
@@ -97,13 +97,14 @@ public class BytesDao implements Dao<byte[]> {
                 int valueLength = in.readInt();
                 byte[] value = in.readNBytes(valueLength);
 
-                String key = new String(
-                        keyBytes,
-                        StandardCharsets.UTF_8
-                );
+                String key = decodeKey(keyBytes);
 
                 db.put(key, value);
             }
         }
+    }
+
+    private static String decodeKey(byte[] keyBytes) {
+        return new String(keyBytes, StandardCharsets.UTF_8);
     }
 }

@@ -28,7 +28,7 @@ public class InMemoryDao implements Dao<String> {
             throw new NoSuchElementException("db does not contain this key: %s".formatted(key));
         }
 
-        return db.get(key);
+        return value;
     }
 
     @Override
