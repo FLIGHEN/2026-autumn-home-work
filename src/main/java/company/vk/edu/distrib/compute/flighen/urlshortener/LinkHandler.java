@@ -15,6 +15,12 @@ public class LinkHandler implements HttpHandler {
     private static final Logger log =
             LoggerFactory.getLogger(LinkHandler.class);
 
+    private static final int HTTP_OK = 200;
+    private static final int HTTP_FORBIDDEN = 403;
+    private static final int HTTP_UNPROCESSABLE_ENTITY = 422;
+    private static final int HTTP_UNSUPPORTED_MEDIA_TYPE = 415;
+    private static final int HTTP_NOT_FOUND = 404;
+
     private static final int ID_LENGTH = 10;
 
     private static final String ENCODING = "utf-8";
@@ -49,7 +55,7 @@ public class LinkHandler implements HttpHandler {
                     handleDelete(exchange);
                     break;
                 default:
-                    exchange.sendResponseHeaders(403, -1);
+                    exchange.sendResponseHeaders(HTTP_FORBIDDEN, -1);
                     break;
             }
         } catch (IOException e) {
@@ -82,17 +88,17 @@ public class LinkHandler implements HttpHandler {
         String id = path[path.length - 1];
 
         if (id == null || !IdUtils.isValidId(id)) {
-            exchange.sendResponseHeaders(422, -1);
+            exchange.sendResponseHeaders(HTTP_UNPROCESSABLE_ENTITY, -1);
             return;
         }
 
         if (!validateHeaders(exchange)) {
-            exchange.sendResponseHeaders(415, -1);
+            exchange.sendResponseHeaders(HTTP_UNSUPPORTED_MEDIA_TYPE, -1);
             return;
         }
 
         if (!exists(id)) {
-            exchange.sendResponseHeaders(404, -1);
+            exchange.sendResponseHeaders(HTTP_NOT_FOUND, -1);
             return;
         }
 
@@ -103,16 +109,16 @@ public class LinkHandler implements HttpHandler {
         }
 
         if (!(newLongLink.contains("https") || newLongLink.contains("http"))) {
-            exchange.sendResponseHeaders(422, -1);
+            exchange.sendResponseHeaders(HTTP_UNPROCESSABLE_ENTITY, -1);
             return;
         }
 
         try {
             dao.upsert(id, newLongLink);
 
-            exchange.sendResponseHeaders(200, -1);
+            exchange.sendResponseHeaders(HTTP_OK, -1);
         } catch (IllegalArgumentException e) {
-            exchange.sendResponseHeaders(422, -1);
+            exchange.sendResponseHeaders(HTTP_UNPROCESSABLE_ENTITY, -1);
         }
     }
 
@@ -122,7 +128,7 @@ public class LinkHandler implements HttpHandler {
         String id = path[path.length - 1];
 
         if (id == null || !IdUtils.isValidId(id)) {
-            exchange.sendResponseHeaders(422, -1);
+            exchange.sendResponseHeaders(HTTP_UNPROCESSABLE_ENTITY, -1);
             return;
         }
 
@@ -131,7 +137,7 @@ public class LinkHandler implements HttpHandler {
 
             exchange.sendResponseHeaders(202, -1);
         } catch (IllegalArgumentException e) {
-            exchange.sendResponseHeaders(422, -1);
+            exchange.sendResponseHeaders(HTTP_UNPROCESSABLE_ENTITY, -1);
         }
     }
 
@@ -141,7 +147,7 @@ public class LinkHandler implements HttpHandler {
         String id = path[path.length - 1];
 
         if (id == null || !IdUtils.isValidId(id)) {
-            exchange.sendResponseHeaders(422, -1);
+            exchange.sendResponseHeaders(HTTP_UNPROCESSABLE_ENTITY, -1);
             return;
         }
 
@@ -151,19 +157,19 @@ public class LinkHandler implements HttpHandler {
             exchange.getResponseHeaders()
                     .add("Content-Type", "%s; charset=%s".formatted(MEDIA_TYPE, ENCODING));
 
-            exchange.sendResponseHeaders(200, link.length());
+            exchange.sendResponseHeaders(HTTP_OK, link.length());
 
             exchange.getResponseBody().write(link.getBytes(StandardCharsets.UTF_8));
         } catch (IllegalArgumentException e) {
-            exchange.sendResponseHeaders(422, -1);
+            exchange.sendResponseHeaders(HTTP_UNPROCESSABLE_ENTITY, -1);
         } catch (NoSuchElementException e) {
-            exchange.sendResponseHeaders(404, -1);
+            exchange.sendResponseHeaders(HTTP_NOT_FOUND, -1);
         }
     }
 
     private void handlePost(HttpExchange exchange) throws IOException {
         if (!validateHeaders(exchange)) {
-            exchange.sendResponseHeaders(415, -1);
+            exchange.sendResponseHeaders(HTTP_UNSUPPORTED_MEDIA_TYPE, -1);
             return;
         }
 
@@ -174,7 +180,7 @@ public class LinkHandler implements HttpHandler {
         }
 
         if (!(longUrl.contains("https") || longUrl.contains("http"))) {
-            exchange.sendResponseHeaders(422, -1);
+            exchange.sendResponseHeaders(HTTP_UNPROCESSABLE_ENTITY, -1);
             return;
         }
 
@@ -183,7 +189,7 @@ public class LinkHandler implements HttpHandler {
         try {
             dao.upsert(generatedID, longUrl);
         } catch (IllegalArgumentException e) {
-            exchange.sendResponseHeaders(422, -1);
+            exchange.sendResponseHeaders(HTTP_UNPROCESSABLE_ENTITY, -1);
             return;
         }
 

@@ -13,6 +13,8 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 
 public class AuthFilter extends Filter {
+    private static final int HTTP_UNAUTHORIZED = 401;
+
     private final Logger log =
             LoggerFactory.getLogger(AuthFilter.class);
 
@@ -43,12 +45,14 @@ public class AuthFilter extends Filter {
         String rawAuth = exchange.getRequestHeaders().getFirst("Authorization");
 
         if (rawAuth == null) {
+            log.warn("Authorization header is missing");
             return false;
         }
 
         String[] userInfo = parseCredentials(rawAuth);
 
-        if (userInfo.length == 0) {
+        if (userInfo.length != 2) {
+            log.warn("Invalid authorization credentials format");
             return false;
         }
 
@@ -56,10 +60,16 @@ public class AuthFilter extends Filter {
         String password = userInfo[1];
 
         if (login.isBlank() || password.isBlank()) {
+            log.warn("Login or password is blank");
             return false;
         }
 
-        return credentialsMatch(login, password);
+        if (!credentialsMatch(login, password)) {
+            log.warn("Authentication failed for user: {}", login);
+            return false;
+        }
+
+        return true;
     }
 
     private boolean credentialsMatch(String login, String password) throws IOException {
@@ -99,6 +109,6 @@ public class AuthFilter extends Filter {
     private void returnUnAuthorized(HttpExchange exchange) throws IOException {
         exchange.getResponseHeaders()
                 .add("WWW-Authenticate", "Basic REALM=\"%s\", charset=\"UTF-8\"".formatted(REALM));
-        exchange.sendResponseHeaders(401, -1);
+        exchange.sendResponseHeaders(HTTP_UNAUTHORIZED, -1);
     }
 }

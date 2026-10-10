@@ -14,6 +14,11 @@ public class RedirectHandler implements HttpHandler {
     private final Logger log =
             LoggerFactory.getLogger(RedirectHandler.class);
 
+    private static final int HTTP_MOVED_PERMANENTLY = 301;
+    private static final int HTTP_FORBIDDEN = 403;
+    private static final int HTTP_UNPROCESSABLE_ENTITY = 422;
+    private static final int HTTP_NOT_FOUND = 404;
+
     private final Dao<String> dao;
 
     public RedirectHandler(Dao<String> dao) {
@@ -32,7 +37,7 @@ public class RedirectHandler implements HttpHandler {
                 String id = path[path.length - 1];
 
                 if (id == null || !IdUtils.isValidId(id)) {
-                    exchange.sendResponseHeaders(422, -1);
+                    exchange.sendResponseHeaders(HTTP_UNPROCESSABLE_ENTITY, -1);
                     exchange.close();
                     return;
                 }
@@ -43,14 +48,14 @@ public class RedirectHandler implements HttpHandler {
                     exchange.getResponseHeaders()
                             .add("Location", longLink);
 
-                    exchange.sendResponseHeaders(301, -1);
+                    exchange.sendResponseHeaders(HTTP_MOVED_PERMANENTLY, -1);
                 } catch (NoSuchElementException e) {
-                    exchange.sendResponseHeaders(404, -1);
+                    exchange.sendResponseHeaders(HTTP_NOT_FOUND, -1);
                 } catch (IllegalArgumentException e) {
-                    exchange.sendResponseHeaders(422, -1);
+                    exchange.sendResponseHeaders(HTTP_UNPROCESSABLE_ENTITY, -1);
                 }
             } else {
-                exchange.sendResponseHeaders(403, -1);
+                exchange.sendResponseHeaders(HTTP_FORBIDDEN, -1);
             }
         } catch (IOException e) {
             if (log.isErrorEnabled()) {

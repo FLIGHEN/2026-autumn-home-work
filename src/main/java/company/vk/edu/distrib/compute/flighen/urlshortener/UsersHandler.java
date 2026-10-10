@@ -17,6 +17,10 @@ public class UsersHandler implements HttpHandler {
     private static final Logger log =
             LoggerFactory.getLogger(UsersHandler.class);
 
+    private static final int HTTP_OK = 200;
+    private static final int HTTP_FORBIDDEN = 403;
+    private static final int HTTP_UNPROCESSABLE_ENTITY = 422;
+
     private final Dao<String> usersDao;
 
     public UsersHandler(Dao<String> dao) {
@@ -33,13 +37,13 @@ public class UsersHandler implements HttpHandler {
                     String data = new String(input.readAllBytes(), StandardCharsets.UTF_8);
 
                     if (parseData(data)) {
-                        exchange.sendResponseHeaders(200, 0);
+                        exchange.sendResponseHeaders(HTTP_OK, 0);
                     } else {
-                        exchange.sendResponseHeaders(422, 0);
+                        exchange.sendResponseHeaders(HTTP_UNPROCESSABLE_ENTITY, 0);
                     }
                 }
             } else {
-                exchange.sendResponseHeaders(403, 0);
+                exchange.sendResponseHeaders(HTTP_FORBIDDEN, 0);
             }
         } catch (IOException e) {
             if (log.isErrorEnabled()) {
