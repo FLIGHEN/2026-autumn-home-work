@@ -14,6 +14,7 @@ import java.util.Objects;
 
 public class AuthFilter extends Filter {
     private static final int HTTP_UNAUTHORIZED = 401;
+    private static final int AUTH_HEADER_PARTS_COUNT = 2;
 
     private final Logger log =
             LoggerFactory.getLogger(AuthFilter.class);
@@ -51,7 +52,7 @@ public class AuthFilter extends Filter {
 
         String[] userInfo = parseCredentials(rawAuth);
 
-        if (userInfo.length != 2) {
+        if (userInfo.length != AUTH_HEADER_PARTS_COUNT) {
             log.warn("Invalid authorization credentials format");
             return false;
         }
@@ -91,7 +92,7 @@ public class AuthFilter extends Filter {
 
         String[] args = strippedAuth.split(" ");
 
-        if (args.length != 2 || !Objects.equals(args[0], "Basic")) {
+        if (args.length != AUTH_HEADER_PARTS_COUNT || !Objects.equals(args[0], "Basic")) {
             return new String[] {};
         }
 
