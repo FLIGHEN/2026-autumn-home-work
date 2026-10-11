@@ -7,6 +7,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class PersistentDao implements Dao<String> {
     private static final int KEY_VALUE_PARTS = 2;
@@ -16,9 +20,12 @@ public class PersistentDao implements Dao<String> {
 
     private final Map<String, String> db;
 
+    private final ReadWriteLock lock = new ReentrantReadWriteLock();
+    private final Lock writeLock = lock.writeLock();
+
     public PersistentDao(Path filePath) throws IOException {
         this.filePath = filePath;
-        db = new HashMap<>();
+        db = new ConcurrentHashMap<>();
 
         if (!Files.exists(filePath)) {
             Files.createFile(filePath);
@@ -36,20 +43,22 @@ public class PersistentDao implements Dao<String> {
 
     @Override
     public String get(String key) throws NoSuchElementException, IllegalArgumentException, IOException {
-        if (key.isBlank()) {
+        if (key == null || key.isBlank()) {
             throw new IllegalArgumentException(KEY_MUST_NOT_BE_NULL);
         }
 
-        if (!db.containsKey(key)) {
+        String value = db.get(key);
+
+        if (value == null) {
             throw new NoSuchElementException("db does not contain this key: %s".formatted(key));
         }
 
-        return db.get(key);
+        return value;
     }
 
     @Override
     public void upsert(String key, String value) throws IllegalArgumentException, IOException {
-        if (key.isBlank()) {
+        if (key == null || key.isBlank()) {
             throw new IllegalArgumentException(KEY_MUST_NOT_BE_NULL);
         }
 
@@ -58,7 +67,7 @@ public class PersistentDao implements Dao<String> {
 
     @Override
     public void delete(String key) throws IllegalArgumentException, IOException {
-        if (key.isBlank()) {
+        if (key == null || key.isBlank()) {
             throw new IllegalArgumentException(KEY_MUST_NOT_BE_NULL);
         }
 
@@ -67,12 +76,17 @@ public class PersistentDao implements Dao<String> {
 
     @Override
     public void close() throws IOException {
-        List<String> lines = new ArrayList<>();
+        writeLock.lock();
+        try {
+            List<String> lines = new ArrayList<>();
 
-        for (Map.Entry<String, String> entry : db.entrySet()) {
-            lines.add(entry.getKey() + "=" + entry.getValue());
+            for (Map.Entry<String, String> entry : db.entrySet()) {
+                lines.add(entry.getKey() + "=" + entry.getValue());
+            }
+
+            Files.write(filePath, lines, StandardCharsets.UTF_8);
+        } finally {
+            writeLock.unlock();
         }
-
-        Files.write(filePath, lines, StandardCharsets.UTF_8);
     }
 }
