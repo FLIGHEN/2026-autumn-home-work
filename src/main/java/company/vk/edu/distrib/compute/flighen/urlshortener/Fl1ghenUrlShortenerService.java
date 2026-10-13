@@ -13,6 +13,8 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +29,9 @@ public class Fl1ghenUrlShortenerService implements UrlShortenerService {
 
     private boolean started;
     private boolean stopped;
+
+    private final ExecutorService executor =
+            Executors.newFixedThreadPool(16);
 
     public Fl1ghenUrlShortenerService(int port) throws IOException {
         Path storageDir = Path.of(
@@ -57,6 +62,9 @@ public class Fl1ghenUrlShortenerService implements UrlShortenerService {
         linksDaoListeners.add(linkHandler);
 
         server = HttpServer.create(new InetSocketAddress(port), 0);
+
+        server.setExecutor(executor);
+
         server.createContext("/v0/status", new GetStatusHandler());
         server.createContext("/", redirectHandler);
         server.createContext("/internal/users", new UsersHandler(usersDao));
@@ -76,6 +84,8 @@ public class Fl1ghenUrlShortenerService implements UrlShortenerService {
     public void stop() {
         server.stop(1);
 
+        executor.shutdown();
+
         try {
             shortLinksDao.close();
         } catch (IOException e) {
@@ -88,7 +98,7 @@ public class Fl1ghenUrlShortenerService implements UrlShortenerService {
             log.error("Failed to close usersDao", e);
         }
 
-        stopped = false;
+        stopped = true;
     }
 
     @Override

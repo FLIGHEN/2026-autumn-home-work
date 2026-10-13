@@ -14,7 +14,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.NoSuchElementException;
 
 public class FlighenRemoteDao implements Dao<String> {
-    private static final Logger log = LoggerFactory.getLogger(FlighenRemoteDao.class);
     private static final String MEDIA_TYPE = "application/octet-stream";
     private final int port;
     private final HttpClient client;

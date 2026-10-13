@@ -24,7 +24,8 @@ public class FlighenKVService implements KVService {
     public FlighenKVService(int port, int threads) throws IOException {
         Path storageDir = Path.of(
                 System.getProperty("java.io.tmpdir"),
-                "fl1ghen-urlshortener"
+                "fl1ghen-urlshortener",
+                String.valueOf(port)
         );
 
         try {
@@ -36,7 +37,7 @@ public class FlighenKVService implements KVService {
             throw e;
         }
 
-        dao = new BytesDao(
+        dao = new KeyListingBytesDao(
                 storageDir.resolve("kv.db")
         );
 
@@ -60,6 +61,7 @@ public class FlighenKVService implements KVService {
         executor.shutdown();
         try {
             dao.close();
+            log.info("KVService data saved successfully");
         } catch (IOException e) {
             log.error("Failed to close bytesDao", e);
         }
