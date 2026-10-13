@@ -80,9 +80,9 @@ public class PersistentDao implements Dao<String> {
         try {
             List<String> lines = new ArrayList<>();
 
-            for (Map.Entry<String, String> entry : db.entrySet()) {
-                lines.add(entry.getKey() + "=" + entry.getValue());
-            }
+        for (Map.Entry<String, String> entry : db.entrySet()) {
+            lines.add(entry.getKey() + "," + entry.getValue());
+        }
 
             Files.write(filePath, lines, StandardCharsets.UTF_8);
         } finally {
