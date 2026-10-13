@@ -137,6 +137,13 @@ public class EntityHandler implements HttpHandler {
             return Optional.empty();
         }
 
-        return Optional.of(matcher.group(1));
+        String id = matcher.group(1);
+
+        if (id.isEmpty()) {
+            exchange.sendResponseHeaders(400, -1);
+            return Optional.empty();
+        }
+
+        return Optional.of(id);
     }
 }

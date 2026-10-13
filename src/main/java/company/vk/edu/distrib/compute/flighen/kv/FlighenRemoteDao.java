@@ -85,7 +85,6 @@ public class FlighenRemoteDao implements Dao<String> {
 
             switch (response.statusCode()) {
                 case 201:
-                    log.info("Key-value pair updated successfully");
                     return;
                 case 422:
                     throw new IllegalArgumentException("Invalid key: " + key);
@@ -120,7 +119,6 @@ public class FlighenRemoteDao implements Dao<String> {
 
             switch (response.statusCode()) {
                 case 202:
-                    log.info("Key deleted successfully");
                     return;
                 case 404:
                     throw new NoSuchElementException("Key not found: " + key);
