@@ -42,11 +42,11 @@ public class FlighenRemoteDao implements Dao<String> {
             );
 
             switch (response.statusCode()) {
-                case 200:
+                case HttpStatusCodes.OK:
                     return new String(response.body(), StandardCharsets.UTF_8);
-                case 404:
+                case HttpStatusCodes.NOT_FOUND:
                     throw new NoSuchElementException("Key not found: " + key);
-                case 422:
+                case HttpStatusCodes.UNPROCESSABLE_ENTITY:
                     throw new IllegalArgumentException("Invalid key: " + key);
                 default:
                     throw new IOException("Unexpected response status: " + response.statusCode());
@@ -81,9 +81,9 @@ public class FlighenRemoteDao implements Dao<String> {
             );
 
             switch (response.statusCode()) {
-                case 201:
+                case HttpStatusCodes.CREATED:
                     return;
-                case 422:
+                case HttpStatusCodes.UNPROCESSABLE_ENTITY:
                     throw new IllegalArgumentException("Invalid key: " + key);
                 default:
                     throw new IOException("Unexpected response status: " + response.statusCode());
@@ -115,11 +115,11 @@ public class FlighenRemoteDao implements Dao<String> {
             );
 
             switch (response.statusCode()) {
-                case 202:
+                case HttpStatusCodes.ACCEPTED:
                     return;
-                case 404:
+                case HttpStatusCodes.NOT_FOUND:
                     throw new NoSuchElementException("Key not found: " + key);
-                case 422:
+                case HttpStatusCodes.UNPROCESSABLE_ENTITY:
                     throw new IllegalArgumentException("Invalid key: " + key);
                 default:
                     throw new IOException("Unexpected response status: " + response.statusCode());

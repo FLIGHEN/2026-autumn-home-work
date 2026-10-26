@@ -40,7 +40,7 @@ public class EntityHandler implements HttpHandler {
                     handleDelete(exchange);
                     break;
                 default:
-                    exchange.sendResponseHeaders(403, -1);
+                    exchange.sendResponseHeaders(HttpStatusCodes.FORBIDDEN, -1);
                     break;
             }
         } catch (IOException e) {
@@ -68,11 +68,11 @@ public class EntityHandler implements HttpHandler {
         try {
             dao.delete(id);
 
-            exchange.sendResponseHeaders(202, -1);
+            exchange.sendResponseHeaders(HttpStatusCodes.ACCEPTED, -1);
         } catch (EmptyKeyException e) {
-            exchange.sendResponseHeaders(400, -1);
+            exchange.sendResponseHeaders(HttpStatusCodes.BAD_REQUEST, -1);
         } catch (IllegalArgumentException e) {
-            exchange.sendResponseHeaders(422, -1);
+            exchange.sendResponseHeaders(HttpStatusCodes.UNPROCESSABLE_ENTITY, -1);
         }
     }
 
@@ -90,11 +90,11 @@ public class EntityHandler implements HttpHandler {
         try {
             dao.upsert(id, value);
 
-            exchange.sendResponseHeaders(201, -1);
+            exchange.sendResponseHeaders(HttpStatusCodes.CREATED, -1);
         } catch (EmptyKeyException e) {
-            exchange.sendResponseHeaders(400, -1);
+            exchange.sendResponseHeaders(HttpStatusCodes.BAD_REQUEST, -1);
         } catch (IllegalArgumentException e) {
-            exchange.sendResponseHeaders(422, -1);
+            exchange.sendResponseHeaders(HttpStatusCodes.UNPROCESSABLE_ENTITY, -1);
         }
     }
 
@@ -110,15 +110,15 @@ public class EntityHandler implements HttpHandler {
         try {
             byte[] value = dao.get(id);
 
-            exchange.sendResponseHeaders(200, value.length);
+            exchange.sendResponseHeaders(HttpStatusCodes.OK, value.length);
 
             exchange.getResponseBody().write(value);
         } catch (EmptyKeyException e) {
-            exchange.sendResponseHeaders(400, -1);
+            exchange.sendResponseHeaders(HttpStatusCodes.BAD_REQUEST, -1);
         } catch (IllegalArgumentException e) {
-            exchange.sendResponseHeaders(422, -1);
+            exchange.sendResponseHeaders(HttpStatusCodes.UNPROCESSABLE_ENTITY, -1);
         } catch (NoSuchElementException e) {
-            exchange.sendResponseHeaders(404, -1);
+            exchange.sendResponseHeaders(HttpStatusCodes.NOT_FOUND, -1);
         }
     }
 
@@ -126,21 +126,21 @@ public class EntityHandler implements HttpHandler {
         String query = exchange.getRequestURI().getRawQuery();
 
         if (query == null) {
-            exchange.sendResponseHeaders(422, -1);
+            exchange.sendResponseHeaders(HttpStatusCodes.UNPROCESSABLE_ENTITY, -1);
             return Optional.empty();
         }
 
         Matcher matcher = ID_PATTERN.matcher(query);
 
         if (!matcher.matches()) {
-            exchange.sendResponseHeaders(422, -1);
+            exchange.sendResponseHeaders(HttpStatusCodes.UNPROCESSABLE_ENTITY, -1);
             return Optional.empty();
         }
 
         String id = matcher.group(1);
 
         if (id.isEmpty()) {
-            exchange.sendResponseHeaders(400, -1);
+            exchange.sendResponseHeaders(HttpStatusCodes.BAD_REQUEST, -1);
             return Optional.empty();
         }
 
