@@ -38,7 +38,6 @@ public class RedirectHandler implements HttpHandler {
 
                 if (id == null || !IdUtils.isValidId(id)) {
                     exchange.sendResponseHeaders(HTTP_UNPROCESSABLE_ENTITY, -1);
-                    exchange.close();
                     return;
                 }
 
@@ -69,7 +68,5 @@ public class RedirectHandler implements HttpHandler {
 
             throw e;
         }
-
-        exchange.close();
     }
 }

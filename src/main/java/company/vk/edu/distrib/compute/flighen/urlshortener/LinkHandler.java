@@ -43,7 +43,7 @@ public class LinkHandler implements HttpHandler {
         try (exchange) {
             switch (method) {
                 case "GET":
-                    handeGet(exchange);
+                    handleGet(exchange);
                     break;
                 case "POST":
                     handlePost(exchange);
@@ -69,8 +69,6 @@ public class LinkHandler implements HttpHandler {
             }
             throw e;
         }
-
-        exchange.close();
     }
 
     private boolean exists(String id) throws IOException {
@@ -141,7 +139,7 @@ public class LinkHandler implements HttpHandler {
         }
     }
 
-    private void handeGet(HttpExchange exchange) throws IOException {
+    private void handleGet(HttpExchange exchange) throws IOException {
         String[] path = exchange.getRequestURI().getPath().split("/");
 
         String id = path[path.length - 1];
