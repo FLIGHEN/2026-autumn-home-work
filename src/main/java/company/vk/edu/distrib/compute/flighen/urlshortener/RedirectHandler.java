@@ -39,7 +39,6 @@ public class RedirectHandler implements HttpHandler, LinksDaoListener {
 
                 if (id == null || !IdUtils.isValidId(id)) {
                     exchange.sendResponseHeaders(HTTP_UNPROCESSABLE_ENTITY, -1);
-                    exchange.close();
                     return;
                 }
 
@@ -70,8 +69,6 @@ public class RedirectHandler implements HttpHandler, LinksDaoListener {
 
             throw e;
         }
-
-        exchange.close();
     }
 
     @Override
