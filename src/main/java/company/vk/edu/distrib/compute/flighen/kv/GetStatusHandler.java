@@ -7,6 +7,9 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
+import static company.vk.edu.distrib.compute.flighen.kv.HttpStatusCodes.OK;
+import static company.vk.edu.distrib.compute.flighen.kv.HttpStatusCodes.SERVICE_UNAVAILABLE;
+
 public class GetStatusHandler implements HttpHandler {
 
     public static final String UP = "UP";
@@ -16,10 +19,10 @@ public class GetStatusHandler implements HttpHandler {
         final var method = exchange.getRequestMethod();
 
         if (Objects.equals(method, "GET")) {
-            exchange.sendResponseHeaders(200, UP.length());
+            exchange.sendResponseHeaders(OK, UP.length());
             exchange.getResponseBody().write(UP.getBytes(StandardCharsets.UTF_8));
         } else {
-            exchange.sendResponseHeaders(503, 0);
+            exchange.sendResponseHeaders(SERVICE_UNAVAILABLE, 0);
         }
 
         exchange.close();
