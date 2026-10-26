@@ -17,6 +17,7 @@ public class LinkHandler implements HttpHandler, LinksDaoListener {
             LoggerFactory.getLogger(LinkHandler.class);
 
     private static final int HTTP_OK = 200;
+    private static final int HTTP_ACCEPTED = 202;
     private static final int HTTP_FORBIDDEN = 403;
     private static final int HTTP_UNPROCESSABLE_ENTITY = 422;
     private static final int HTTP_UNSUPPORTED_MEDIA_TYPE = 415;
@@ -134,7 +135,7 @@ public class LinkHandler implements HttpHandler, LinksDaoListener {
         try {
             dao.delete(id);
 
-            exchange.sendResponseHeaders(202, -1);
+            exchange.sendResponseHeaders(HTTP_ACCEPTED, -1);
         } catch (IllegalArgumentException e) {
             exchange.sendResponseHeaders(HTTP_UNPROCESSABLE_ENTITY, -1);
         }
