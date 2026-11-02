@@ -2,16 +2,19 @@ package company.vk.edu.distrib.compute.flighen.kv;
 
 import company.vk.edu.distrib.compute.AbstractHttpServiceFactory;
 import company.vk.edu.distrib.compute.kv.KVServiceTest;
+import company.vk.edu.distrib.compute.kv.ReplicatedKVServiceTest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
 @KVServiceTest
+@ReplicatedKVServiceTest
 public class FlighenKVServiceFactory extends AbstractHttpServiceFactory<FlighenKVService> {
     private static final Logger log = LoggerFactory.getLogger(FlighenKVServiceFactory.class);
 
     private static final int THREADSNUM = 8;
+    private static final String REPLICA_FACTOR_ENV = "KV_REPLICA_FACTOR";
 
     @Override
     protected FlighenKVService doCreate(int port) throws IOException {
@@ -24,6 +27,19 @@ public class FlighenKVServiceFactory extends AbstractHttpServiceFactory<FlighenK
             log.info("Starting KV Service in multithreading mode");
         }
 
-        return new FlighenKVService(port, threads);
+        return new FlighenKVService(port, threads, getReplicaFactor());
+    }
+
+    private static int getReplicaFactor() {
+        String rawReplicaFactor = System.getenv(REPLICA_FACTOR_ENV);
+        if (rawReplicaFactor == null || rawReplicaFactor.isBlank()) {
+            return 0;
+        }
+
+        int replicaFactor = Integer.parseInt(rawReplicaFactor);
+        if (replicaFactor < 1) {
+            throw new IllegalArgumentException("Replica factor must be positive");
+        }
+        return replicaFactor;
     }
 }
