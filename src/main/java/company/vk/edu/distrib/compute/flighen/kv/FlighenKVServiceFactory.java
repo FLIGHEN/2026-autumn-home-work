@@ -14,6 +14,7 @@ public class FlighenKVServiceFactory extends AbstractHttpServiceFactory<FlighenK
     private static final Logger log = LoggerFactory.getLogger(FlighenKVServiceFactory.class);
 
     private static final int THREADSNUM = 8;
+    private static final int MIN_REPLICA_FACTOR = 1;
     private static final String REPLICA_FACTOR_ENV = "KV_REPLICA_FACTOR";
 
     @Override
@@ -37,7 +38,7 @@ public class FlighenKVServiceFactory extends AbstractHttpServiceFactory<FlighenK
         }
 
         int replicaFactor = Integer.parseInt(rawReplicaFactor);
-        if (replicaFactor < 1) {
+        if (replicaFactor < MIN_REPLICA_FACTOR) {
             throw new IllegalArgumentException("Replica factor must be positive");
         }
         return replicaFactor;

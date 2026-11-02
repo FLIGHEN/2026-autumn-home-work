@@ -17,6 +17,7 @@ public final class EntityHandler implements HttpHandler {
     private static final Pattern PARAMETERS_PATTERN = Pattern.compile(
             "^id=([A-Za-z0-9_-]*)(?:&ack=([^&]*))?$"
     );
+    private static final int MIN_ACK = 1;
     private static final byte[] EMPTY_BODY = new byte[0];
 
     private final int mainPort;
@@ -147,7 +148,7 @@ public final class EntityHandler implements HttpHandler {
 
         String rawAck = matcher.group(2);
         if (rawAck == null) {
-            return Optional.of(new RequestParameters(key, 1));
+            return Optional.of(new RequestParameters(key, MIN_ACK));
         }
         if (!coordinator) {
             sendEmpty(exchange, HttpStatusCodes.BAD_REQUEST);
@@ -162,7 +163,7 @@ public final class EntityHandler implements HttpHandler {
             return Optional.empty();
         }
 
-        if (ack < 1) {
+        if (ack < MIN_ACK) {
             sendEmpty(exchange, HttpStatusCodes.BAD_REQUEST);
             return Optional.empty();
         }

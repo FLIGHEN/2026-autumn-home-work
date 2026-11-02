@@ -19,6 +19,9 @@ import java.util.concurrent.TimeUnit;
 final class ReplicationCoordinator {
     private static final String INTERNAL_ENTITY_PATH = "/v0/internal/entity";
     private static final String MEDIA_TYPE = "application/octet-stream";
+    private static final String GET_METHOD = "GET";
+    private static final String PUT_METHOD = "PUT";
+    private static final String DELETE_METHOD = "DELETE";
     private static final Duration REPLICA_TIMEOUT = Duration.ofMillis(1200);
     private static final Duration REQUEST_TIMEOUT = Duration.ofMillis(1500);
     private static final byte[] EMPTY_BODY = new byte[0];
@@ -57,12 +60,12 @@ final class ReplicationCoordinator {
     OperationResult executeLocally(String method, String key, byte[] value) {
         try {
             switch (method) {
-                case "GET":
+                case GET_METHOD:
                     return new OperationResult(HttpStatusCodes.OK, dao.get(key), null);
-                case "PUT":
+                case PUT_METHOD:
                     dao.upsert(key, value);
                     return OperationResult.empty(HttpStatusCodes.CREATED);
-                case "DELETE":
+                case DELETE_METHOD:
                     dao.delete(key);
                     return OperationResult.empty(HttpStatusCodes.ACCEPTED);
                 default:
@@ -95,15 +98,15 @@ final class ReplicationCoordinator {
                 .timeout(REPLICA_TIMEOUT);
 
         switch (method) {
-            case "GET":
+            case GET_METHOD:
                 requestBuilder.GET();
                 break;
-            case "PUT":
+            case PUT_METHOD:
                 requestBuilder
                         .header("Content-Type", MEDIA_TYPE)
                         .PUT(HttpRequest.BodyPublishers.ofByteArray(value));
                 break;
-            case "DELETE":
+            case DELETE_METHOD:
                 requestBuilder.DELETE();
                 break;
             default:
@@ -178,7 +181,7 @@ final class ReplicationCoordinator {
             OperationResult result,
             byte[] currentValue
     ) {
-        if ("GET".equals(method) && result.statusCode() == HttpStatusCodes.OK) {
+        if (GET_METHOD.equals(method) && result.statusCode() == HttpStatusCodes.OK) {
             return result.body();
         }
         return currentValue;
@@ -190,12 +193,12 @@ final class ReplicationCoordinator {
         }
 
         switch (method) {
-            case "GET":
+            case GET_METHOD:
                 return result.statusCode() == HttpStatusCodes.OK
                         || result.statusCode() == HttpStatusCodes.NOT_FOUND;
-            case "PUT":
+            case PUT_METHOD:
                 return result.statusCode() == HttpStatusCodes.CREATED;
-            case "DELETE":
+            case DELETE_METHOD:
                 return result.statusCode() == HttpStatusCodes.ACCEPTED;
             default:
                 return false;
@@ -204,13 +207,13 @@ final class ReplicationCoordinator {
 
     private static OperationResult successfulResult(String method, byte[] foundValue, boolean replicated) {
         switch (method) {
-            case "GET":
+            case GET_METHOD:
                 return foundValue == null
                         ? OperationResult.empty(HttpStatusCodes.NOT_FOUND)
                         : new OperationResult(HttpStatusCodes.OK, foundValue, null);
-            case "PUT":
+            case PUT_METHOD:
                 return OperationResult.empty(HttpStatusCodes.CREATED);
-            case "DELETE":
+            case DELETE_METHOD:
                 return OperationResult.empty(
                         replicated ? HttpStatusCodes.OK : HttpStatusCodes.ACCEPTED
                 );
