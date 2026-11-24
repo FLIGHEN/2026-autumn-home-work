@@ -104,11 +104,13 @@ public final class FlighenModerationService implements ModerationService {
                 }
             }
         } catch (WakeupException e) {
-            if (running.get()) {
+            if (running.get() && log.isErrorEnabled()) {
                 log.error("Moderation consumer was unexpectedly interrupted", e);
             }
         } catch (KafkaException e) {
-            log.error("Moderation consumer failed", e);
+            if (log.isErrorEnabled()) {
+                log.error("Moderation consumer failed", e);
+            }
         } finally {
             closeClients();
         }
@@ -124,7 +126,9 @@ public final class FlighenModerationService implements ModerationService {
             return;
         } catch (ExecutionException | KafkaException e) {
             if (running.get()) {
-                log.warn("Could not process moderation record for {}", record.key(), e);
+                if (log.isWarnEnabled()) {
+                    log.warn("Could not process moderation record for {}", record.key(), e);
+                }
                 consumer.seek(partition, record.offset());
             }
             return;
@@ -133,7 +137,7 @@ public final class FlighenModerationService implements ModerationService {
         try {
             consumer.commitSync(COMMIT_TIMEOUT);
         } catch (KafkaException e) {
-            if (running.get()) {
+            if (running.get() && log.isWarnEnabled()) {
                 log.warn("Could not commit moderation offset", e);
             }
         }
@@ -177,25 +181,30 @@ public final class FlighenModerationService implements ModerationService {
         try {
             consumer.close(CLOSE_TIMEOUT);
         } catch (KafkaException e) {
-            log.warn("Failed to close moderation consumer", e);
+            if (log.isWarnEnabled()) {
+                log.warn("Failed to close moderation consumer", e);
+            }
         }
         try {
             producer.close(CLOSE_TIMEOUT);
         } catch (KafkaException e) {
-            log.warn("Failed to close moderation producer", e);
+            if (log.isWarnEnabled()) {
+                log.warn("Failed to close moderation producer", e);
+            }
         }
     }
 
     private static List<String> loadBannedWords() throws IOException {
-        InputStream stream = FlighenModerationService.class.getResourceAsStream("/moderation/banned_words.txt");
-        if (stream == null) {
-            throw new IOException("Banned words resource is missing");
-        }
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
-            return reader.lines()
-                    .map(word -> word.trim().toLowerCase(Locale.ROOT))
-                    .filter(word -> !word.isEmpty())
-                    .toList();
+        try (InputStream stream = FlighenModerationService.class.getResourceAsStream("/moderation/banned_words.txt")) {
+            if (stream == null) {
+                throw new IOException("Banned words resource is missing");
+            }
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
+                return reader.lines()
+                        .map(word -> word.trim().toLowerCase(Locale.ROOT))
+                        .filter(word -> !word.isEmpty())
+                        .toList();
+            }
         }
     }
 

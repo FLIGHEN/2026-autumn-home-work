@@ -73,24 +73,32 @@ public final class FlighenModerationResultConsumer {
             consumer.subscribe(List.of(TOPIC));
             while (running.get()) {
                 for (ConsumerRecord<String, byte[]> record : consumer.poll(POLL_TIMEOUT)) {
-                    try {
-                        applyResult(record);
-                    } catch (IOException | KafkaException e) {
-                        if (running.get()) {
-                            log.warn("Could not apply moderation result for {}", record.key(), e);
-                            consumer.seek(new TopicPartition(record.topic(), record.partition()), record.offset());
-                        }
-                    }
+                    processRecord(record);
                 }
             }
         } catch (WakeupException e) {
-            if (running.get()) {
+            if (running.get() && log.isErrorEnabled()) {
                 log.error("Moderation result consumer was unexpectedly interrupted", e);
             }
         } catch (KafkaException e) {
-            log.error("Moderation result consumer failed", e);
+            if (log.isErrorEnabled()) {
+                log.error("Moderation result consumer failed", e);
+            }
         } finally {
             closeConsumer();
+        }
+    }
+
+    private void processRecord(ConsumerRecord<String, byte[]> record) {
+        try {
+            applyResult(record);
+        } catch (IOException | KafkaException e) {
+            if (running.get()) {
+                if (log.isWarnEnabled()) {
+                    log.warn("Could not apply moderation result for {}", record.key(), e);
+                }
+                consumer.seek(new TopicPartition(record.topic(), record.partition()), record.offset());
+            }
         }
     }
 
@@ -99,7 +107,9 @@ public final class FlighenModerationResultConsumer {
         try {
             result = codec.deserializeModerationResult(record.value());
         } catch (IOException | IllegalArgumentException e) {
-            log.warn("Invalid moderation result for {}", record.key(), e);
+            if (log.isWarnEnabled()) {
+                log.warn("Invalid moderation result for {}", record.key(), e);
+            }
             return;
         }
 
@@ -107,7 +117,9 @@ public final class FlighenModerationResultConsumer {
             try {
                 dao.delete(result.id());
             } catch (NoSuchElementException e) {
-                log.debug("Moderated link {} has already been deleted", result.id());
+                if (log.isDebugEnabled()) {
+                    log.debug("Moderated link {} has already been deleted", result.id());
+                }
             }
         }
     }
@@ -116,7 +128,9 @@ public final class FlighenModerationResultConsumer {
         try {
             consumer.close(CLOSE_TIMEOUT);
         } catch (KafkaException e) {
-            log.warn("Failed to close moderation result consumer", e);
+            if (log.isWarnEnabled()) {
+                log.warn("Failed to close moderation result consumer", e);
+            }
         }
     }
 }

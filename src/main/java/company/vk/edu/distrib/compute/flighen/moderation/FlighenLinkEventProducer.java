@@ -46,7 +46,9 @@ public final class FlighenLinkEventProducer {
         try {
             executor.execute(() -> sendEvent(event));
         } catch (RejectedExecutionException e) {
-            log.warn("Could not enqueue link creation event for {}", id, e);
+            if (log.isWarnEnabled()) {
+                log.warn("Could not enqueue link creation event for {}", id, e);
+            }
         }
     }
 
@@ -55,12 +57,14 @@ public final class FlighenLinkEventProducer {
             byte[] data = codec.serializeLinkCreated(event);
             ProducerRecord<String, byte[]> record = new ProducerRecord<>(TOPIC, event.id(), data);
             producer.send(record, (metadata, error) -> {
-                if (error != null) {
+                if (error != null && log.isWarnEnabled()) {
                     log.warn("Could not deliver link creation event for {}", event.id(), error);
                 }
             });
         } catch (IOException | RuntimeException e) {
-            log.warn("Could not send link creation event for {}", event.id(), e);
+            if (log.isWarnEnabled()) {
+                log.warn("Could not send link creation event for {}", event.id(), e);
+            }
         }
     }
 
@@ -78,7 +82,9 @@ public final class FlighenLinkEventProducer {
         try {
             producer.close(CLOSE_TIMEOUT);
         } catch (RuntimeException e) {
-            log.warn("Failed to close Kafka producer", e);
+            if (log.isWarnEnabled()) {
+                log.warn("Failed to close Kafka producer", e);
+            }
         }
     }
 }
