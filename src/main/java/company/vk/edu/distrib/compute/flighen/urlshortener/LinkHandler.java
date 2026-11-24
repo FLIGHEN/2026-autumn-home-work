@@ -3,6 +3,7 @@ package company.vk.edu.distrib.compute.flighen.urlshortener;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import company.vk.edu.distrib.compute.Dao;
+import company.vk.edu.distrib.compute.flighen.kv.LinksDaoListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,11 +12,12 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.io.IOException;
 
-public class LinkHandler implements HttpHandler {
+public class LinkHandler implements HttpHandler, LinksDaoListener {
     private static final Logger log =
             LoggerFactory.getLogger(LinkHandler.class);
 
     private static final int HTTP_OK = 200;
+    private static final int HTTP_ACCEPTED = 202;
     private static final int HTTP_FORBIDDEN = 403;
     private static final int HTTP_UNPROCESSABLE_ENTITY = 422;
     private static final int HTTP_UNSUPPORTED_MEDIA_TYPE = 415;
@@ -27,7 +29,7 @@ public class LinkHandler implements HttpHandler {
     private static final String MEDIA_TYPE = "text/html";
     private static final String CHARSET = "charset";
 
-    private final Dao<String> dao;
+    private Dao<String> dao;
 
     private final int port;
 
@@ -133,7 +135,7 @@ public class LinkHandler implements HttpHandler {
         try {
             dao.delete(id);
 
-            exchange.sendResponseHeaders(202, -1);
+            exchange.sendResponseHeaders(HTTP_ACCEPTED, -1);
         } catch (IllegalArgumentException e) {
             exchange.sendResponseHeaders(HTTP_UNPROCESSABLE_ENTITY, -1);
         }
@@ -226,5 +228,10 @@ public class LinkHandler implements HttpHandler {
         }
 
         return ENCODING.equalsIgnoreCase(charset);
+    }
+
+    @Override
+    public void onLinksDaoChanged(Dao<String> dao) {
+        this.dao = dao;
     }
 }
